@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Summary Generator</title>
+</head>
+<body>
+    <h1>Summary Generator</h1>
+        <form action="/generate_summary/" method="post">
+            <label for="article">Enter Article:</label><br>
+            <textarea id="article" name="article" rows="10" cols="50"></textarea><br>
+            <input type="submit" value="Generate Summary">
+        </form>
+    </form>
+    <h2>Generated Summary:</h2>
+    <p id="summary">{{ summary }}</p>
+</body>
+</html>
