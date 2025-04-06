@@ -8,3 +8,5 @@ parquet
 evaluate
 rouge_score
 matplotlib
+fastapi
+uvicorn
