@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -9,18 +9,13 @@ from src.features.tokenization import parallel_tokenize
 from src.models.transformer import Transformer
 from src.evaluation.model_evaluation import generate_summaries_transformer
 
-def get_allowed_cpu_count():
-    try:
-        return len(os.sched_getaffinity(0))
-    except AttributeError:
-        return os.cpu_count() or 1
-
-cpu_count = get_allowed_cpu_count()
-print(cpu_count)
-n_process = max(1, cpu_count // 2)
-
+# Initialisation de FastAPI
 app = FastAPI()
 
+# Chemin vers le dossier templates
+templates = Jinja2Templates(directory="app/templates")
+
+# Chargement du tokenizer et du modèle
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 modelTransformer = Transformer(
     pad_idx=0,
@@ -39,38 +34,40 @@ modelTransformer.eval()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.to(device)
 
-templates = Jinja2Templates(directory="app/templates")  # Assurez-vous que ce chemin est correct
-
-class SummaryRequest(BaseModel):
-    articles: list
-
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "summary": ""})
-
-@app.post("/generate_summary/", response_class=HTMLResponse)
-async def generate_summary(request: Request, article: str = Form(...)):
+# Fonction pour obtenir le nombre de CPU disponibles
+def get_allowed_cpu_count():
     try:
-        tokenized_input = parallel_tokenize(
-            [article],
-            tokenizer_name="bert-base-uncased",
-            max_workers=n_process,
-            chunk_size=2000,
-            max_length=512,
-        )
-        summaries = generate_summaries_transformer(modelTransformer, batch_size=32, tokenized_input=tokenized_input)
-        return templates.TemplateResponse("index.html", {"request": request, "summary": summaries[0]})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return len(os.sched_getaffinity(0))
+    except AttributeError:
+        return os.cpu_count() or 1
+
+cpu_count = get_allowed_cpu_count()
+n_process = max(1, cpu_count // 2)
+
+# Route pour afficher le formulaire
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "summary": None})
+
+# Route pour traiter le formulaire et générer le résumé
+@app.post("/summarize/", response_class=HTMLResponse)
+def summarize_text(request: Request, text: str = Form(...)):
+    print("Texte reçu :", text)
+    tokenized_input = parallel_tokenize(
+        [text],
+        tokenizer_name="bert-base-uncased",
+        max_workers=n_process,
+        chunk_size=2000,
+        max_length=512,
+    )
+    summaries = generate_summaries_transformer(modelTransformer, batch_size=32, tokenized_input=tokenized_input)
+    print(summaries[0])
+    return templates.TemplateResponse("index.html", {"request": request, "summary": summaries[0]})
+
 
 ''' api works : in Terminal 
 
 uvicorn app.api:app --reload
-curl -X POST "http://127.0.0.1:8000/generate_summary/" \
-     -H "Content-Type: application/json" \
-     -d '{
-           "articles": [
-             "new york police concerned drone tool terrorist investigate way stop potential attack police acknowledge drone potential weapon nypd say technology advance use carry air assault chemical weapon firearm police want develop technology allow control drone scan sky major event nypd say drone carry explosive number threat investigate way stop attack deputy chief salvatore dipace left concern incident year drone land german chancellor angela merkel take chancellor people drone fly pack football stadium manchester england week ago result suspect pilot arrest consult military member counterterrorism bomb squad emergency service aviation unit work plan counter weaponize drone nypd receive intelligence indicate imminent threat increasingly concerned year deputy chief salvatore dipace tell cbs news look people jury rig drone carry gun carry different type explosive want possibility worried mr dipace say police see video show accurate attack drone see video drone fly different target route accurately hit target paintball nypd see drone carry explosive number threat mr dipace concern follow incident germany year drone able land german chancellor angela merkel deliver speech drone circle land ms merkel deliver speech sin germany spark fear device easily commit terrorist act say think happen drone hit target right mark take chancellor people dramatic increase incident involve drone new york city year 40 record case unmanned aircraft system drone fly airspace nypd helicopter incident summer drone 800 foot ground nearly collide police helicopter nypd aviation unit member sergeant antonio hernandez say fly dark night vision goggle try job thing know drone come altitude"
-           ]
-         }'
+curl -X POST "http://127.0.0.1:8000/summarize/" -H "Content-Type: application/x-www-form-urlencoded" -d "text=new york police concerned drone tool terrorist investigate way stop potential attack police acknowledge drone potential weapon nypd say technology advance use carry air assault chemical weapon firearm police want develop technology allow control drone scan sky major event nypd say drone carry explosive number threat investigate way stop attack deputy chief salvatore dipace left concern incident year drone land german chancellor angela merkel take chancellor people drone fly pack football stadium manchester england week ago result suspect pilot arrest consult military member counterterrorism bomb squad emergency service aviation unit work plan counter weaponize drone nypd receive intelligence indicate imminent threat increasingly concerned year deputy chief salvatore dipace tell cbs news look people jury rig drone carry gun carry different type explosive want possibility worried mr dipace say police see video show accurate attack drone see video drone fly different target route accurately hit target paintball nypd see drone carry explosive number threat mr dipace concern follow incident germany year drone able land german chancellor angela merkel deliver speech drone circle land ms merkel deliver speech sin germany spark fear device easily commit terrorist act say think happen drone hit target right mark take chancellor people dramatic increase incident involve drone new york city year 40 record case unmanned aircraft system drone fly airspace nypd helicopter incident summer drone 800 foot ground nearly collide police helicopter nypd aviation unit member sergeant antonio hernandez say fly dark night vision goggle try job thing know drone come altitude"
+
 '''
