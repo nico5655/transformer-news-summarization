@@ -12,3 +12,4 @@ fastapi
 uvicorn
 jinja2
 python-multipart
+huggingface_hub
