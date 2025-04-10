@@ -28,10 +28,11 @@ modelTransformer = Transformer(
     n_layers=3,
 )
 
-modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth"))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth",
+                                            map_location=device))
 modelTransformer.eval()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.to(device)
 
 # Fonction pour obtenir le nombre de CPU disponibles
