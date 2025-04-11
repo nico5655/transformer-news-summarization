@@ -28,14 +28,12 @@ modelTransformer = Transformer(
     n_layers=config["n_layers"]
 )
 
-# Charger les poids
 modelTransformer.load_state_dict(torch.load("model/pytorch_model.bin", map_location="cpu"))
 modelTransformer.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.to(device)
 
-# Fonction pour obtenir le nombre de CPU disponibles
 def get_allowed_cpu_count():
     try:
         return len(os.sched_getaffinity(0))
@@ -45,12 +43,10 @@ def get_allowed_cpu_count():
 cpu_count = get_allowed_cpu_count()
 n_process = max(1, cpu_count // 2)
 
-# Route pour afficher le formulaire
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "summary": None})
 
-# Route pour traiter le formulaire et générer le résumé
 @app.post("/summarize/", response_class=HTMLResponse)
 def summarize_text(request: Request, text: str = Form(...)):
     print("Texte reçu :", text)
