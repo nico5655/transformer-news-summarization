@@ -14,7 +14,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="app/templates")
 
-with open("model/config_model.json", "r") as f:
+with open("src/models/config_model.json", "r") as f:
     config = json.load(f)
 
 modelTransformer = Transformer(
@@ -28,7 +28,7 @@ modelTransformer = Transformer(
     n_layers=config["n_layers"]
 )
 
-modelTransformer.load_state_dict(torch.load("model/pytorch_model.bin", map_location="cpu"))
+modelTransformer.load_state_dict(torch.load("src/models/pytorch_model.bin", map_location="cpu"))
 modelTransformer.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
