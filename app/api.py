@@ -28,10 +28,12 @@ modelTransformer = Transformer(
     n_layers=config["n_layers"]
 )
 
-modelTransformer.load_state_dict(torch.load("src/models/pytorch_model.bin", map_location="cpu"))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth",
+                                            map_location=device))
+
 modelTransformer.eval()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.to(device)
 
 def get_allowed_cpu_count():
