@@ -7,17 +7,13 @@
 import pandas as pd
 import s3fs
 import json
+import io
 import zipfile
 import os
 from src.features.functions_preprocessing import (
     preprocess_articles,
     preprocess_summaries,
 )
-
-with open('config.json', 'r') as config_file:
-    config = json.load(config_file)
-
-MY_BUCKET = config['MY_BUCKET']
 
 
 def get_allowed_cpu_count():
@@ -30,6 +26,11 @@ def get_allowed_cpu_count():
 
 cpu_count = get_allowed_cpu_count()
 n_process = max(1, cpu_count // 2)
+
+fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
+
+with fs.open("s3://arougier/diffusion/archive.zip") as f:
+    zip_content = io.BytesIO(f.read())
 
 with zipfile.ZipFile("news-summarization.zip", "r") as zip_ref:
     zip_ref.extractall("news-summarization")
@@ -56,6 +57,6 @@ news_data.to_parquet("news_data_cleaned.parquet", index=False)
 
 fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
 local_parquet_path = "news_data_cleaned.parquet"
-s3_parquet_path = f"s3://{MY_BUCKET}/diffusion/news_data_cleaned_share.parquet"
+s3_parquet_path = "s3://arougier/diffusion/news_data_cleaned_share.parquet"
 fs.put(local_parquet_path, s3_parquet_path)
 print(f"Fichier envoyé avec succès à {s3_parquet_path}")

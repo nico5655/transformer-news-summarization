@@ -3,6 +3,7 @@ import pandas as pd
 import evaluate
 import argparse
 import torch
+import s3fs
 from torch import nn
 from loguru import logger
 from torch.utils.data import DataLoader, TensorDataset, random_split
@@ -54,7 +55,13 @@ NUM_EPOCHS = args.num_epochs
 
 
 logger.info(f"Using {device} device")
-news_data = pd.read_parquet("news_data_cleaned.parquet")
+
+s3_parquet_path = "s3://arougier/diffusion/news_data_cleaned_share.parquet"
+fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
+
+with fs.open(s3_parquet_path, 'rb') as f:
+    news_data = pd.read_parquet(f)
+
 
 data_copy = news_data[:]
 data_copy = news_data.sample(frac=1, random_state=42)
