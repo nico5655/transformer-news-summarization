@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-device = (
+DEVICE = (
     "cuda"
     if torch.cuda.is_available()
     else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -20,7 +20,7 @@ class AttentionLayer(nn.Module):
             hidden_size (int): Dimension of the hidden state.
             n_head (int): Number of attention heads.
         """
-        super(AttentionLayer, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.n_head = n_head
         self.w_q = nn.Linear(hidden_size, hidden_size)
@@ -85,7 +85,7 @@ class EncoderLayer(nn.Module):
             n_head (int): Number of attention heads.
             drop_prob (float): Dropout probability.
         """
-        super(EncoderLayer, self).__init__()
+        super().__init__()
         self.attention = AttentionLayer(hidden_size=hidden_size, n_head=n_head)
         self.norm1 = nn.LayerNorm(hidden_size)
         self.dropout1 = nn.Dropout(p=drop_prob)
@@ -140,7 +140,7 @@ class DecoderLayer(nn.Module):
             n_head (int): Number of attention heads.
             drop_prob (float): Dropout probability.
         """
-        super(DecoderLayer, self).__init__()
+        super().__init__()
         self.self_attention = AttentionLayer(hidden_size=hidden_size, n_head=n_head)
         self.norm1 = nn.LayerNorm(hidden_size)
         self.dropout1 = nn.Dropout(p=drop_prob)
@@ -206,12 +206,12 @@ class PositionalEncoding(nn.Module):
             hidden_size (int): Dimension of the hidden state.
             max_len (int): Maximum sequence length.
         """
-        super(PositionalEncoding, self).__init__()
-        self.encoding = torch.zeros(max_len, hidden_size, device=device)
+        super().__init__()
+        self.encoding = torch.zeros(max_len, hidden_size, device=DEVICE)
         self.encoding.requires_grad = False
-        pos = torch.arange(0, max_len, device=device)
+        pos = torch.arange(0, max_len, device=DEVICE)
         pos = pos.float().unsqueeze(dim=1)
-        _2i = torch.arange(0, hidden_size, step=2, device=device).float()
+        _2i = torch.arange(0, hidden_size, step=2, device=DEVICE).float()
         self.encoding[:, 0::2] = torch.sin(pos / (10000 ** (_2i / hidden_size)))
         self.encoding[:, 1::2] = torch.cos(pos / (10000 ** (_2i / hidden_size)))
 
@@ -225,7 +225,7 @@ class PositionalEncoding(nn.Module):
         Returns:
             Tensor: Positional encoded tensor.
         """
-        batch_size, seq_len = x.size()
+        _, seq_len = x.size()
         return self.encoding[:seq_len, :]
 
 
@@ -242,7 +242,7 @@ class TransformerEmbedding(nn.Module):
             max_len (int): Maximum sequence length.
             drop_prob (float): Dropout probability.
         """
-        super(TransformerEmbedding, self).__init__()
+        super().__init__()
         self.tok_emb = nn.Embedding(vocab_size, hidden_size, padding_idx=1)
         self.pos_emb = PositionalEncoding(hidden_size, max_len)
         self.drop_out = nn.Dropout(p=drop_prob)
@@ -383,7 +383,7 @@ class Transformer(nn.Module):
         trg_pad_mask = (trg != self.pad_idx).unsqueeze(1).unsqueeze(3)
         trg_len = trg.shape[1]
         trg_sub_mask = (
-            torch.tril(torch.ones(trg_len, trg_len)).type(torch.ByteTensor).to(device)
+            torch.tril(torch.ones(trg_len, trg_len)).type(torch.ByteTensor).to(DEVICE)
         )
         trg_mask = trg_pad_mask & trg_sub_mask
         return trg_mask
