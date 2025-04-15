@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+import json
 import os
 import torch
 from transformers import BertTokenizer
@@ -9,33 +10,32 @@ from src.features.tokenization import parallel_tokenize
 from src.models.transformer import Transformer
 from src.evaluation.model_evaluation import generate_summaries_transformer
 
-# Initialisation de FastAPI
 app = FastAPI()
 
-# Chemin vers le dossier templates
 templates = Jinja2Templates(directory="app/templates")
 
-# Chargement du tokenizer et du modèle
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+with open("src/models/config_model.json", "r") as f:
+    config = json.load(f)
+
 modelTransformer = Transformer(
-    pad_idx=0,
-    voc_size=tokenizer.vocab_size,
-    hidden_size=128,
-    n_head=8,
-    max_len=512,
-    dec_max_len=128,
-    ffn_hidden=128,
-    n_layers=3,
+    pad_idx=config["pad_idx"],
+    voc_size=config["voc_size"],
+    hidden_size=config["hidden_size"],
+    n_head=config["n_head"],
+    max_len=config["max_len"],
+    dec_max_len=config["dec_max_len"],
+    ffn_hidden=config["ffn_hidden"],
+    n_layers=config["n_layers"]
 )
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth",
                                             map_location=device))
+
 modelTransformer.eval()
 
 modelTransformer.to(device)
 
-# Fonction pour obtenir le nombre de CPU disponibles
 def get_allowed_cpu_count():
     try:
         return len(os.sched_getaffinity(0))
@@ -45,12 +45,10 @@ def get_allowed_cpu_count():
 cpu_count = get_allowed_cpu_count()
 n_process = max(1, cpu_count // 2)
 
-# Route pour afficher le formulaire
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "summary": None})
 
-# Route pour traiter le formulaire et générer le résumé
 @app.post("/summarize/", response_class=HTMLResponse)
 def summarize_text(request: Request, text: str = Form(...)):
     print("Texte reçu :", text)

@@ -1,6 +1,6 @@
-import torch
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+import torch
 from transformers import BertTokenizer
 
 
@@ -41,7 +41,7 @@ def parallel_tokenize(
         torch.Tensor: Concatenated tensor of input_ids from all chunks.
     """
     # Split the data into chunks
-    chunks = [texts[i : i + chunk_size] for i in range(0, len(texts), chunk_size)]
+    chunks = [texts[i: i + chunk_size] for i in range(0, len(texts), chunk_size)]
 
     # Prepare a partial function with tokenizer args
     tokenize_fn = partial(
