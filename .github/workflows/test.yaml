@@ -25,4 +25,4 @@ jobs:
       - name: Test lint
         run: |
           pip install pylint
-          pylint train_models.py --fail-under=6
+          pylint train_test.py --fail-under=6
