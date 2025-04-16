@@ -56,11 +56,10 @@ NUM_EPOCHS = args.num_epochs
 
 logger.info(f"Using {device} device")
 
-s3_parquet_path = "s3://arougier/diffusion/news_data_cleaned_share.parquet"
-fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
+URL_RAW = "https://minio.lab.sspcloud.fr/arougier/diffusion/news_data_cleaned_share.parquet"
 
-with fs.open(s3_parquet_path, 'rb') as f:
-    news_data = pd.read_parquet(f)
+data_path = os.environ.get("data_path", URL_RAW)
+news_data = pd.read_parquet(data_path, engine='pyarrow')
 
 
 data_copy = news_data[:]
