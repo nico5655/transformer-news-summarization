@@ -14,19 +14,19 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="app/templates")
 
-with open("src/models/config_model.json", "r") as f:
-    config = json.load(f)
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
 modelTransformer = Transformer(
-    pad_idx=config["pad_idx"],
-    voc_size=config["voc_size"],
-    hidden_size=config["hidden_size"],
-    n_head=config["n_head"],
-    max_len=config["max_len"],
-    dec_max_len=config["dec_max_len"],
-    ffn_hidden=config["ffn_hidden"],
-    n_layers=config["n_layers"]
+    pad_idx=0,
+    voc_size=tokenizer.vocab_size,
+    hidden_size=128,
+    n_head=8,
+    max_len=512,
+    dec_max_len=512,
+    ffn_hidden=128,
+    n_layers=3
 )
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth",
