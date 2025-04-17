@@ -27,7 +27,7 @@ modelTransformer = Transformer(
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-modelTransformer.load_state_dict(torch.load("src/models/pytorch_model.bin",
+modelTransformer.load_state_dict(torch.load("src/model_text_summarization/pytorch_model.bin",
                                             map_location=device))
 
 modelTransformer.eval()

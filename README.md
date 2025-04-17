@@ -34,6 +34,9 @@ The models were trained on an NVIDIA A100 GPU with 40 GB of high-bandwidth memor
 | Transformer                  | 0.20    | 0.04    | 0.15    | ~ $1.6 \times 10^4$ s (25) | $1.25 \times 10^7$  |
 
 
+### Pour obtenir le model avec les poids il faut faire les commandes suivantes dans le terminal 
 
 
-
+```bash
+cd transformer-news-summarization/src
+git clone https://huggingface.co/Antoiner77/model_text_summarization
