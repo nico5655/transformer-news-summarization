@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-import json
 import os
 import torch
 from transformers import BertTokenizer
