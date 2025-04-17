@@ -5,7 +5,7 @@ import os
 import torch
 from transformers import BertTokenizer
 from src.features.tokenization import parallel_tokenize
-from src.models.transformer import Transformer
+from src.model_text_summarization.transformer import Transformer
 from src.evaluation.model_evaluation import generate_summaries_transformer
 
 app = FastAPI()
