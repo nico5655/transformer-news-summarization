@@ -6,4 +6,4 @@ news-summarization/
 *.json
 *.parquet
 data.csv
-pytorch_model.bin
+src/models/pytorch_model.bin
