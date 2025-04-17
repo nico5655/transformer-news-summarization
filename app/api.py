@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import os
 import torch
+from huggingface_hub import hf_hub_download
 from transformers import BertTokenizer
 from src.features.tokenization import parallel_tokenize
 from src.models.transformer import Transformer
@@ -27,8 +28,10 @@ modelTransformer = Transformer(
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-modelTransformer.load_state_dict(torch.load("model_weights/transformer_weights_25_epochs.pth",
-                                            map_location=device))
+repo_id = "Antoiner77/model_test_2"
+filename = "pytorch_model.bin"
+weights_path = hf_hub_download(repo_id=repo_id, filename=filename)
+modelTransformer.load_state_dict(torch.load(weights_path, map_location=device))
 
 modelTransformer.eval()
 
