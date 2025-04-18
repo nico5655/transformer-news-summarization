@@ -28,7 +28,7 @@ modelTransformer = Transformer(
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-repo_id = "Antoiner77/model_test_2"
+repo_id = "Antoiner77/model_text_summarization"
 filename = "pytorch_model.bin"
 weights_path = hf_hub_download(repo_id=repo_id, filename=filename)
 modelTransformer.load_state_dict(torch.load(weights_path, map_location=device))
