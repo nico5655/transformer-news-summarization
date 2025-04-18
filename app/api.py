@@ -62,7 +62,11 @@ def summarize_text(request: Request, text: str = Form(...)):
     )
     summaries = generate_summaries_transformer(modelTransformer, batch_size=32, tokenized_input=tokenized_input)
     print(summaries[0])
-    return templates.TemplateResponse("index.html", {"request": request, "summary": summaries[0]})
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "summary": summaries[0],
+        "original_text": text
+    })
 
 
 ''' api works : in Terminal 

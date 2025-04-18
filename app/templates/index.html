@@ -71,6 +71,15 @@
                             <button type="submit" class="btn btn-primary btn-lg">Summarize</button>
                         </div>
                     </form>
+                    {% if original_text %}
+                    <div class="summary-container mt-4">
+                        <h4>📄 Original Text:</h4>
+                        <div class="summary-box">
+                            <p>{{ original_text }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     {% if summary %}
                     <div class="summary-container mt-4">
                         <h4>📝 Summary:</h4>
