@@ -5,7 +5,7 @@ import os
 import torch
 from transformers import BertTokenizer
 from src.features.tokenization import parallel_tokenize
-from src.model_text_summarization.transformer import Transformer
+from model_text_summarization.transformer import Transformer
 from src.evaluation.model_evaluation import generate_summaries_transformer
 
 app = FastAPI()
@@ -25,10 +25,10 @@ modelTransformer = Transformer(
     n_layers=3
 )
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-modelTransformer.load_state_dict(torch.load("src/model_text_summarization/pytorch_model.bin",
-                                            map_location=device))
+modelTransformer.load_state_dict(torch.load("model_text_summarization/pytorch_model.bin",
+                                            map_location=device,
+                                            weights_only=False))
 
 modelTransformer.eval()
 
