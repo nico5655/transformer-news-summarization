@@ -6,6 +6,7 @@
 
 import pandas as pd
 import s3fs
+import requests
 import io
 import zipfile
 import os
@@ -26,13 +27,15 @@ def get_allowed_cpu_count():
 cpu_count = get_allowed_cpu_count()
 n_process = max(1, cpu_count // 2)
 
-fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
+URL_ZIP = "https://minio.lab.sspcloud.fr/arougier/diffusion/archive.zip"
+zip_path = os.environ.get("zip_path", URL_ZIP)
 
-with fs.open("s3://arougier/diffusion/archive.zip") as f:
-    zip_content = io.BytesIO(f.read())
+response = requests.get(zip_path)
+response.raise_for_status()  
 
-with zipfile.ZipFile("news-summarization.zip", "r") as zip_ref:
+with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
     zip_ref.extractall("news-summarization")
+
 
 news_data = pd.read_csv("news-summarization/data.csv")
 lengths_article = news_data["Content"].str.len()
