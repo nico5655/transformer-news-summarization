@@ -37,8 +37,7 @@ Pour utiliser ce projet sur votre propre installation (recommandé si vous souha
 
 # 🚀 Installation
 
-1. **Cloner le dépôt :**
-
+## Cloner le dépôt
 ```bash
 git clone https://github.com/nico5655/transformer-news-summarization.git
 cd transformer-news-summarization
@@ -56,26 +55,23 @@ source env/bin/activate
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
-
 ## Nettoyage et pré-traitement des données (optionnel : données sur le S3)
-
 ```bash
 python src/features/create_data.py
 ```
-
 ## Entraînement du modèle Transformer (optionnel : poids entraînés disponible sur Huggingface)
-
 ```bash
 python train_test.py
 ```
-
 ## Lancement de l'API : (utilise les poids d'Huggingface)
-
 ```bash
 uvicorn app.api:app --reload
 ```
 
-### Performance : 
+---
+
+
+# Performance : 
 
 Le modèle a été entraîné sur un GPU NVIDIA A100 avec 40 Go de mémoire. 
 ROUGE (Recall-Oriented Understudy for Gisting Evaluation) est une méthode d'évaluation utilisée principalement pour évaluer la qualité des résumés automatiques ou de la traduction automatique. Elle compare les n-grammes (séquences de mots) entre le texte généré par le modèle et un ou plusieurs résumés de référence.
