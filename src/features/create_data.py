@@ -9,7 +9,7 @@ import s3fs
 import io
 import zipfile
 import os
-from src.features.functions_preprocessing import (
+from functions_preprocessing import (
     preprocess_articles,
     preprocess_summaries,
 )
@@ -52,10 +52,3 @@ news_data.loc[:, "Summary"] = preprocess_summaries(
 )
 
 news_data.to_parquet("news_data_cleaned.parquet", index=False)
-
-
-fs = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
-local_parquet_path = "news_data_cleaned.parquet"
-s3_parquet_path = "s3://arougier/diffusion/news_data_cleaned_share.parquet"
-fs.put(local_parquet_path, s3_parquet_path)
-print(f"Fichier envoyé avec succès à {s3_parquet_path}")
