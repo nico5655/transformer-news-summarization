@@ -1,6 +1,6 @@
-# Transformer Exploration for News Summarization :newspaper:
+# Modèle Transformer pour résumer des articles d'information :newspaper:
 
-Ce projet explore le modèle basé sur les Transformers, inspirés par l'article [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762). Nous souhaitons entraînés un modèle Transformers **news article summarization** avec les données suivantes [Kaggle News Summarization dataset](https://www.kaggle.com/datasets/sbhatti/news-summarization). Puis mettre à disposition notre modèle grâce à une API.
+Ce projet explore le modèle de Transformer, inspiré par l'article [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762). Nous avons entraîné un modèle Transformer pour **résumer des articles d'information** avec les données suivantes [Kaggle News Summarization dataset](https://www.kaggle.com/datasets/sbhatti/news-summarization).
 
 
 ---
@@ -13,7 +13,7 @@ L'interface suivante apparaît : il ne reste qu'à entrer l'article de votre cho
 
 ![Logo](https://example.com/image.png).
 
-Pour développer ce projet en local, il est aussi possible d'utiliser le Dockerfile mis à disposition, ainsi que la dernière image Docker du projet accessible au lien suivant : [hub.docker.com/r/nico5655/ensae-prod](https://hub.docker.com/r/nico5655/ensae-prod).
+Pour utiliser ce projet sur votre propre installation (recommandé si vous souhaitez un temps de réponse plus rapide), il est aussi possible d'utiliser le Dockerfile, ainsi que la dernière image Docker du projet accessible au lien suivant : [hub.docker.com/r/nico5655/ensae-prod](https://hub.docker.com/r/nico5655/ensae-prod).
 
 ---
 
@@ -69,7 +69,13 @@ python src/features/create_data.py
 python train_test.py
 ```
 
-### Nous mettons les résultats de la performance de notre modèle ici : 
+## API : prend directement les poids du modèle qui sont sauvegarder sur Huggingface et permet d'avoir une interface pour communiquer
+
+```bash
+uvicorn app.api:app --reload
+```
+
+### Performance : 
 
 Le modèle a été entraîné sur un GPU NVIDIA A100 avec 40 Go de mémoire. 
 ROUGE (Recall-Oriented Understudy for Gisting Evaluation) est une méthode d'évaluation utilisée principalement pour évaluer la qualité des résumés automatiques ou de la traduction automatique. Elle compare les n-grammes (séquences de mots) entre le texte généré par le modèle et un ou plusieurs résumés de référence.
@@ -77,13 +83,3 @@ ROUGE (Recall-Oriented Understudy for Gisting Evaluation) est une méthode d'év
 | Model                        | ROUGE-1 | ROUGE-2 | ROUGE-L | Train Time (ep)  | Params  |
 |------------------------------|---------|---------|---------|------------------|---------|
 | Transformer                  | 0.20    | 0.04    | 0.15    | ~ $1.6 \times 10^4$ s (25) | $1.25 \times 10^7$  |
-
-
-## API : prend directement les poids du modèle qui sont sauvegarder sur Huggingface et permet d'avoir une interface pour communiquer
-
-```bash
-uvicorn app.api:app --reload
-```
-
-
-
