@@ -1,17 +1,17 @@
 # Modèle Transformer pour résumer des articles d'information :newspaper:
 
-Ce projet explore le modèle de Transformer, inspiré par l'article [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762). Nous avons entraîné un modèle Transformer pour **résumer des articles d'information** avec les données suivantes [Kaggle News Summarization dataset](https://www.kaggle.com/datasets/sbhatti/news-summarization).
+Ce projet explore le modèle de Transformer, inspiré par l'article [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762). Nous avons entraîné un modèle Transformer pour **résumer des articles d'information** avec les données suivantes : [Kaggle News Summarization dataset](https://www.kaggle.com/datasets/sbhatti/news-summarization).
 
 
 ---
 
 # Utiliser ce projet
 
-Le projet est deployé sur le SSPCloud à l'adresse suivante : [news-summarizer.lab.sspcloud.fr](https://news-summarizer.lab.sspcloud.fr/)
+Le projet est deployé sur le SSPCloud à l'adresse suivante : [news-summarizer.lab.sspcloud.fr](https://news-summarizer.lab.sspcloud.fr/). Le dépôt GitOps contrôlant le déploiement sur ArgoCD est disponible à l'adresse suivante : [github.com/boalong/transformer-news-summarization-deployment](https://github.com/boalong/transformer-news-summarization-deployment).
 
 L'interface suivante apparaît : il ne reste qu'à entrer l'article de votre choix et attendre le résumé.
 
-![Logo](https://example.com/image.png).
+![Exemple](img/input.png).
 
 Pour utiliser ce projet sur votre propre installation (recommandé si vous souhaitez un temps de réponse plus rapide), il est aussi possible d'utiliser le Dockerfile, ainsi que la dernière image Docker du projet accessible au lien suivant : [hub.docker.com/r/nico5655/ensae-prod](https://hub.docker.com/r/nico5655/ensae-prod).
 
