@@ -26,17 +26,20 @@ This project explores Transformer-based models inspired by the paper [*Attention
 ```bash
 git clone https://github.com/nico5655/transformer-news-summarization.git
 cd transformer-news-summarization
-
-# Créer un environnement virtuel
+```
+### Créer un environnement virtuel
+```bash
 python -m venv env
-
-# Activer l’environnement virtuel
+```
+### Activer l’environnement virtuel
+```bash
 source env/bin/activate  # Sous Windows : env\Scripts\activate
-
-# Installer les dépendances
+```
+### Installer les dépendances
+```bash
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
-
+```
 ---
 
 ## Nous mettons les résultats de la performance de notre modèle ici : 
