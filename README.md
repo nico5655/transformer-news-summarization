@@ -9,9 +9,9 @@ Ce projet explore le modèle de Transformer, inspiré par l'article [*Attention 
 
 Le projet est deployé sur le SSPCloud à l'adresse suivante : [news-summarizer.lab.sspcloud.fr](https://news-summarizer.lab.sspcloud.fr/). Le dépôt GitOps contrôlant le déploiement sur ArgoCD est disponible à l'adresse suivante : [github.com/boalong/transformer-news-summarization-deployment](https://github.com/boalong/transformer-news-summarization-deployment).
 
-L'interface suivante apparaît : il ne reste qu'à entrer l'article de votre choix et attendre le résumé.
+Une interface apparaît : il ne reste qu'à entrer l'article de votre choix et attendre le résumé :
 
-![Exemple](img/input.png).
+![Exemple](img/input.png)
 
 Pour utiliser ce projet sur votre propre installation (recommandé si vous souhaitez un temps de réponse plus rapide), il est aussi possible d'utiliser le Dockerfile, ainsi que la dernière image Docker du projet accessible au lien suivant : [hub.docker.com/r/nico5655/ensae-prod](https://hub.docker.com/r/nico5655/ensae-prod).
 
