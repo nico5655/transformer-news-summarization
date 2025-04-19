@@ -69,7 +69,7 @@ python src/features/create_data.py
 python train_test.py
 ```
 
-## API : prend directement les poids du modèle qui sont sauvegarder sur Huggingface et permet d'avoir une interface pour communiquer
+## Lancement de l'API : (utilise les poids d'Huggingface)
 
 ```bash
 uvicorn app.api:app --reload
