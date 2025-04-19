@@ -33,24 +33,41 @@ python -m venv env
 ```
 ### Activer l’environnement virtuel
 ```bash
-source env/bin/activate  # Sous Windows : env\Scripts\activate
+source env/bin/activate 
 ```
 ### Installer les dépendances
 ```bash
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
----
 
-## Nous mettons les résultats de la performance de notre modèle ici : 
+### Nettoyage et pré-traitement des données (optionnel : données sur le S3)
 
-The models were trained on an NVIDIA A100 GPU with 40 GB of high-bandwidth memory :computer:
+```bash
+python src/features/create_data.py
+```
+
+### Entraînement du modèle Transformer (optionnel : poids entraînés disponible sur Huggingface)
+
+```bash
+python train_test.py
+```
+
+#### Nous mettons les résultats de la performance de notre modèle ici : 
+
+Le modèle a été entraîné sur un GPU NVIDIA A100 avec 40 Go de mémoire. 
+ROUGE (Recall-Oriented Understudy for Gisting Evaluation) est une méthode d'évaluation utilisée principalement pour évaluer la qualité des résumés automatiques ou de la traduction automatique. Elle compare les n-grammes (séquences de mots) entre le texte généré par le modèle et un ou plusieurs résumés de référence.
 
 | Model                        | ROUGE-1 | ROUGE-2 | ROUGE-L | Train Time (ep)  | Params  |
 |------------------------------|---------|---------|---------|------------------|---------|
 | Transformer                  | 0.20    | 0.04    | 0.15    | ~ $1.6 \times 10^4$ s (25) | $1.25 \times 10^7$  |
 
 
+### API : prend directement les poids du modèle qui sont sauvegarder sur Huggingface et permet d'avoir une interface pour communiquer
+
+```bash
+uvicorn app.api:app --reload
+```
 
 
 
