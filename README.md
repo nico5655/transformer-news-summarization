@@ -2,7 +2,21 @@
 
 Ce projet explore le modèle basé sur les Transformers, inspirés par l'article [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762). Nous souhaitons entraînés un modèle Transformers **news article summarization** avec les données suivantes [Kaggle News Summarization dataset](https://www.kaggle.com/datasets/sbhatti/news-summarization). Puis mettre à disposition notre modèle grâce à une API.
 
+
 ---
+
+# Utiliser ce projet
+
+Le projet est deployé sur le SSPCloud à l'adresse suivante : [news-summarizer.lab.sspcloud.fr](https://news-summarizer.lab.sspcloud.fr/)
+
+L'interface suivante apparaît : il ne reste qu'à entrer l'article de votre choix et attendre le résumé.
+
+![Logo](https://example.com/image.png).
+
+Pour développer ce projet en local, il est aussi possible d'utiliser le Dockerfile mis à disposition, ainsi que la dernière image Docker du projet accessible au lien suivant : [hub.docker.com/r/nico5655/ensae-prod](https://hub.docker.com/r/nico5655/ensae-prod).
+
+---
+
 
 # 📁 Structure du projet
 
