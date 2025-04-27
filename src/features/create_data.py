@@ -5,7 +5,6 @@
 # kaggle datasets download -d sbhatti/news-summarization
 
 import pandas as pd
-import s3fs
 import requests
 import io
 import zipfile
