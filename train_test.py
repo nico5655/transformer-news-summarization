@@ -3,7 +3,6 @@ import pandas as pd
 import evaluate
 import argparse
 import torch
-import s3fs
 from torch import nn
 from loguru import logger
 from torch.utils.data import DataLoader, TensorDataset, random_split
