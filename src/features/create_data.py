@@ -5,53 +5,70 @@
 # kaggle datasets download -d sbhatti/news-summarization
 
 import pandas as pd
-import s3fs
-import requests
-import io
-import zipfile
 import os
+from tqdm import tqdm
 from functions_preprocessing import (
     preprocess_articles,
     preprocess_summaries,
 )
 
-
 def get_allowed_cpu_count():
-    # Returns the number of CPU cores available for this process.
     try:
         return len(os.sched_getaffinity(0))
     except AttributeError:
         return os.cpu_count() or 1
 
-
 cpu_count = get_allowed_cpu_count()
 n_process = max(1, cpu_count // 2)
 
-URL_ZIP = "https://minio.lab.sspcloud.fr/arougier/diffusion/archive.zip"
-zip_path = os.environ.get("zip_path", URL_ZIP)
+def main():
+    # Use already unzipped dataset
+    data_path = "news-summarization/data.csv"
+    assert os.path.exists(data_path), f"Dataset not found at {data_path}. Make sure you've manually unzipped it."
 
-response = requests.get(zip_path)
-response.raise_for_status()  
+    # Load and filter dataset
+    print("Loading dataset...")
+    news_data = pd.read_csv(data_path)
 
-with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
-    zip_ref.extractall("news-summarization")
+    # Select a small subset for faster preprocessing
+    subset_size = 500  # Change this if needed
+    if len(news_data) > subset_size:
+        print(f"Using a subset of {subset_size} samples out of {len(news_data)}...")
+        news_data = news_data.sample(n=subset_size, random_state=42).reset_index(drop=True)
 
+    print("Filtering by article length...")
+    lengths_article = news_data["Content"].str.len()
+    news_data = news_data[
+        (lengths_article >= lengths_article.quantile(0.10))
+        & (lengths_article <= lengths_article.quantile(0.90))
+    ].reset_index(drop=True)
 
-news_data = pd.read_csv("news-summarization/data.csv")
-lengths_article = news_data["Content"].str.len()
-lengths_summary = news_data["Summary"].str.len()
+    # Preprocess articles
+    print("Preprocessing articles...")
+    content_list = news_data["Content"].tolist()
+    news_data.loc[:, "Content"] = list(
+        tqdm(
+            preprocess_articles(content_list, n_process=n_process, batch_size=32),
+            total=len(content_list),
+            desc="Articles"
+        )
+    )
 
-news_data = news_data[
-    (lengths_article >= lengths_article.quantile(0.10))
-    & (lengths_article <= lengths_article.quantile(0.90))
-]
+    # Preprocess summaries
+    print("Preprocessing summaries...")
+    summary_list = news_data["Summary"].tolist()
+    news_data.loc[:, "Summary"] = list(
+        tqdm(
+            preprocess_summaries(summary_list, n_process=n_process, batch_size=32),
+            total=len(summary_list),
+            desc="Summaries"
+        )
+    )
 
+    # Save the cleaned data
+    print("Saving to Parquet...")
+    news_data.to_parquet("news_data_cleaned_subset.parquet", index=False)
+    print("Done.")
 
-news_data.loc[:, "Content"] = preprocess_articles(
-    news_data["Content"].tolist(), n_process=n_process, batch_size=32
-)
-news_data.loc[:, "Summary"] = preprocess_summaries(
-    news_data["Summary"].tolist(), n_process=n_process, batch_size=32
-)
-
-news_data.to_parquet("news_data_cleaned.parquet", index=False)
+if __name__ == "__main__":
+    main()
