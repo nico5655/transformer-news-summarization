@@ -1,3 +1,4 @@
+import os
 import time
 import torch
 from loguru import logger
@@ -105,6 +106,8 @@ def train_model(
             f"Average Val Loss: {avg_val_loss:.4f} - "
             f"Time: {epoch_duration:.2f}s"
         )
+
+        os.makedirs("model_weights", exist_ok=True)
 
         torch.save(
             model.state_dict(),
