@@ -8,3 +8,6 @@ news-summarization/
 data.csv
 
 env/
+
+.DS_Store
+model_weights/

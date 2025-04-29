@@ -3,7 +3,7 @@ import pandas as pd
 import evaluate
 import argparse
 import torch
-import s3fs
+# import s3fs
 from torch import nn
 from loguru import logger
 from torch.utils.data import DataLoader, TensorDataset, random_split
@@ -27,134 +27,138 @@ n_process = max(1, cpu_count // 2)
 torch.set_num_threads(n_process)
 
 
-device = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
-)
+def main():
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps" if torch.backends.mps.is_available() else "cpu"
+    )
 
-parser = argparse.ArgumentParser(description='Training and testing parameters')
-parser.add_argument(
-    "--train_ratio", type=float, default=0.8, help="Ratio of data to be used for training"
-)
-parser.add_argument(
-    "--val_split", type=float, default=0.2, help="Ratio of training data to be used for validation"
-)
-parser.add_argument(
-    "--batch_size", type=int, default=32, help="Batch size"
-)
-parser.add_argument(
-    "--num_epochs", type=int, default=25, help="Number of training epochs"
-)
-args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Training and testing parameters')
+    parser.add_argument(
+        "--train_ratio", type=float, default=0.8, help="Ratio of data to be used for training"
+    )
+    parser.add_argument(
+        "--val_split", type=float, default=0.2, help="Ratio of training data to be used for validation"
+    )
+    parser.add_argument(
+        "--batch_size", type=int, default=32, help="Batch size"
+    )
+    parser.add_argument(
+        "--num_epochs", type=int, default=25, help="Number of training epochs"
+    )
+    args = parser.parse_args()
 
-TRAIN_RATIO = args.train_ratio
-BATCH_SIZE = args.batch_size
-VAL_SPLIT = args.val_split
-NUM_EPOCHS = args.num_epochs
-
-
-logger.info(f"Using {device} device")
-
-URL_RAW = "https://minio.lab.sspcloud.fr/arougier/diffusion/news_data_cleaned_share.parquet"
-
-data_path = os.environ.get("data_path", URL_RAW)
-news_data = pd.read_parquet(data_path)
+    TRAIN_RATIO = args.train_ratio
+    BATCH_SIZE = args.batch_size
+    VAL_SPLIT = args.val_split
+    NUM_EPOCHS = args.num_epochs
 
 
-data_copy = news_data[:]
-data_copy = news_data.sample(frac=1, random_state=42)
+    logger.info(f"Using {device} device")
 
-train_size = int(TRAIN_RATIO * len(data_copy))
+    URL_RAW = "https://minio.lab.sspcloud.fr/arougier/diffusion/news_data_cleaned_share.parquet"
 
-# Slice the dataset
-train_data = data_copy[:train_size]
-test_data = data_copy[train_size:]
+    data_path = os.environ.get("data_path", URL_RAW)
+    news_data = pd.read_parquet(data_path)
 
-logger.info(f"Train size: {len(train_data)}")
-logger.info(f"Test size:  {len(test_data)}")
 
-logger.info("Tokenizing Content...")
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    data_copy = news_data[:]
+    data_copy = news_data.sample(frac=1, random_state=42)
 
-tokenized_articles = parallel_tokenize(
-    list(train_data["Content"]),
-    tokenizer_name="bert-base-uncased",
-    max_workers=n_process,
-    chunk_size=2000,
-    max_length=512,
-)
+    train_size = int(TRAIN_RATIO * len(data_copy))
 
-tokenized_articles_test = parallel_tokenize(
-    list(test_data["Content"]),
-    tokenizer_name="bert-base-uncased",
-    max_workers=n_process,
-    chunk_size=2000,
-    max_length=512,
-)
+    # Slice the dataset
+    train_data = data_copy[:train_size]
+    test_data = data_copy[train_size:]
 
-tokenized_summaries = parallel_tokenize(
-    list(train_data["Summary"]),
-    tokenizer_name="bert-base-uncased",
-    max_workers=n_process,
-    chunk_size=2000,
-    max_length=129,
-)
+    logger.info(f"Train size: {len(train_data)}")
+    logger.info(f"Test size:  {len(test_data)}")
 
-article_ids = tokenized_articles.long()
-summary_ids = tokenized_summaries.long()
+    logger.info("Tokenizing Content...")
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
-dataset = TensorDataset(tokenized_articles, tokenized_summaries)
-train_dataset, val_dataset = random_split(dataset, [1-VAL_SPLIT, VAL_SPLIT])
-dataloader = DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, num_workers=n_process, shuffle=True
-)
-val_dataloader = DataLoader(
-    val_dataset, batch_size=BATCH_SIZE, num_workers=n_process
-)
+    tokenized_articles = parallel_tokenize(
+        list(train_data["Content"]),
+        tokenizer_name="bert-base-uncased",
+        max_workers=n_process,
+        chunk_size=2000,
+        max_length=512,
+    )
 
-logger.info('Starting training')
+    tokenized_articles_test = parallel_tokenize(
+        list(test_data["Content"]),
+        tokenizer_name="bert-base-uncased",
+        max_workers=n_process,
+        chunk_size=2000,
+        max_length=512,
+    )
 
-modelTransformer = Transformer(
-    pad_idx=0,
-    voc_size=tokenizer.vocab_size,
-    hidden_size=128,
-    n_head=8,
-    max_len=512,
-    dec_max_len=512,
-    ffn_hidden=128,
-    n_layers=3,
-)
+    tokenized_summaries = parallel_tokenize(
+        list(train_data["Summary"]),
+        tokenizer_name="bert-base-uncased",
+        max_workers=n_process,
+        chunk_size=2000,
+        max_length=129,
+    )
 
-train_model(
-    model=modelTransformer,
-    dataloader=dataloader,
-    val_data_loader=val_dataloader,
-    num_epochs=NUM_EPOCHS,
-    optimizer=torch.optim.Adam(modelTransformer.parameters(), lr=2e-4),
-    loss_fn=nn.CrossEntropyLoss(
-        ignore_index=tokenizer.pad_token_id
-    ),
-    model_name="Transformer",
-    device=device,
-)
+    article_ids = tokenized_articles.long()
+    summary_ids = tokenized_summaries.long()
 
-modelTransformer.eval()
+    dataset = TensorDataset(tokenized_articles, tokenized_summaries)
+    train_dataset, val_dataset = random_split(dataset, [1-VAL_SPLIT, VAL_SPLIT])
+    dataloader = DataLoader(
+        train_dataset, batch_size=BATCH_SIZE, num_workers=n_process, shuffle=True
+    )
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=BATCH_SIZE, num_workers=n_process
+    )
 
-rouge = evaluate.load("rouge")
+    logger.info('Starting training')
 
-predictions_transformer = generate_summaries_transformer(
-    model=modelTransformer,
-    batch_size=BATCH_SIZE,
-    tokenized_input=tokenized_articles_test,
-    limit=None,
-)
+    modelTransformer = Transformer(
+        pad_idx=0,
+        voc_size=tokenizer.vocab_size,
+        hidden_size=128,
+        n_head=8,
+        max_len=512,
+        dec_max_len=512,
+        ffn_hidden=128,
+        n_layers=3,
+    )
 
-test_data.loc[:, "predictions_transformer"] = predictions_transformer
+    train_model(
+        model=modelTransformer,
+        dataloader=dataloader,
+        val_data_loader=val_dataloader,
+        num_epochs=NUM_EPOCHS,
+        optimizer=torch.optim.Adam(modelTransformer.parameters(), lr=2e-4),
+        loss_fn=nn.CrossEntropyLoss(
+            ignore_index=tokenizer.pad_token_id
+        ),
+        model_name="Transformer",
+        device=device,
+    )
 
-reference_summaries = list(test_data["Summary"])
-results = rouge.compute(
-    predictions=predictions_transformer, references=reference_summaries
-)
+    modelTransformer.eval()
 
-logger.info("ROUGE metrics:", results)
+    rouge = evaluate.load("rouge")
+
+    predictions_transformer = generate_summaries_transformer(
+        model=modelTransformer,
+        batch_size=BATCH_SIZE,
+        tokenized_input=tokenized_articles_test,
+        limit=None,
+    )
+
+    test_data.loc[:, "predictions_transformer"] = predictions_transformer
+
+    reference_summaries = list(test_data["Summary"])
+    results = rouge.compute(
+        predictions=predictions_transformer, references=reference_summaries
+    )
+
+    logger.info("ROUGE metrics:", results)
+
+if __name__ == "__main__":
+    main()
